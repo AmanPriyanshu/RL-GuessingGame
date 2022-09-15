@@ -6,4 +6,4 @@ The RLAgent is successfully distinguish that majority sampling is to be done onl
 
 We can show this with the demo_image.
 
-![Figure](demo_results_choice_of_option.PNG)
+![Figure](/demo_results_choice_of_option.png)
