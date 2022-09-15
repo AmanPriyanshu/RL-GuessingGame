@@ -71,5 +71,5 @@ class Experiment:
 		history_pred.to_csv("experiment.csv", index=False, mode="a")
 
 if __name__ == '__main__':
-	exp = Experiment(10, 100, 52)
+	exp = Experiment(20, 100, 52)
 	exp.run_experiment()
