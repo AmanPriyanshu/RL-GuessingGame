@@ -4,6 +4,7 @@ import torch
 import numpy as np
 from tqdm import trange
 import pandas as pd
+from matplotlib import pyplot as plt
 
 class Experiment:
 	def __init__(self, num_agents, num_chits, majority_chits=None, seed=0):
@@ -59,6 +60,7 @@ class Experiment:
 			history_pred.append(order_pred)
 			history_in_game_order.append(order_in_game_order)
 		bar.close()
+		self.plotter(history_pred, history_in_game_order, history_performance)
 		history_in_game_order = pd.DataFrame(np.array(history_in_game_order), columns=["agent"+str(i) for i in range(self.num_agents)])
 		history_performance = pd.DataFrame(np.array(history_performance), columns=["agent"+str(i) for i in range(self.num_agents)])
 		history_pred = pd.DataFrame(np.array(history_pred), columns=["agent"+str(i) for i in range(self.num_agents)])
@@ -69,6 +71,41 @@ class Experiment:
 		history_performance.to_csv("experiment.csv", index=False, mode="a")
 		df.to_csv("experiment.csv", index=False, mode="a", header=False)
 		history_pred.to_csv("experiment.csv", index=False, mode="a")
+
+	def plotter(self, history_pred, history_in_game_order, history_performance):
+		# choice graph - the initials, the middlers, the latters
+		f, (ax1, ax2, ax3) = plt.subplots(1, 3, sharey=True, figsize=(15, 10))
+		init_choices = [[p.item() for o,p in zip(in_game_order, pred) if o>=0 and o<self.num_agents//3] for in_game_order, pred in zip(history_in_game_order, history_pred)]
+		init_choices_counts = np.zeros((len(init_choices), 4))
+		for row_idx, choice in enumerate(init_choices):
+			for i in range(4):
+				count = len([c for c in choice if c==i])
+				init_choices_counts[row_idx, i] = count
+		ax1.set_title("Initially participating")
+		for i, (c,l) in enumerate(zip(['r', 'g', 'b', 'y'], ["random", "picked up", "opposite of picked up", "majority"])):
+			ax1.plot(init_choices_counts.T[i], c=c, label=l)
+
+		init_choices = [[p.item() for o,p in zip(in_game_order, pred) if o>=self.num_agents//3 and o<2*(self.num_agents//3)] for in_game_order, pred in zip(history_in_game_order, history_pred)]
+		init_choices_counts = np.zeros((len(init_choices), 4))
+		for row_idx, choice in enumerate(init_choices):
+			for i in range(4):
+				count = len([c for c in choice if c==i])
+				init_choices_counts[row_idx, i] = count
+		ax2.set_title("Intermediately participating")
+		for i, (c,l) in enumerate(zip(['r', 'g', 'b', 'y'], ["random", "picked up", "opposite of picked up", "majority"])):
+			ax2.plot(init_choices_counts.T[i], c=c, label=l)
+
+		init_choices = [[p.item() for o,p in zip(in_game_order, pred) if o>=2*(self.num_agents//3)] for in_game_order, pred in zip(history_in_game_order, history_pred)]
+		init_choices_counts = np.zeros((len(init_choices), 4))
+		for row_idx, choice in enumerate(init_choices):
+			for i in range(4):
+				count = len([c for c in choice if c==i])
+				init_choices_counts[row_idx, i] = count
+		ax3.set_title("Lastly participating")
+		for i, (c,l) in enumerate(zip(['r', 'g', 'b', 'y'], ["random", "picked up", "opposite of picked up", "majority"])):
+			ax3.plot(init_choices_counts.T[i], c=c, label=l)
+		plt.legend()
+		plt.show()
 
 if __name__ == '__main__':
 	exp = Experiment(20, 100, 52)
